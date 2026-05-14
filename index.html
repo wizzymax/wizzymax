@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="pageTitle">Mawingu — Monthly Performance Report</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;font-size:13px;background:#f0f4f8;color:#1a1a1a;padding:20px}
+.page{max-width:1000px;margin:0 auto;background:#fff;box-shadow:0 2px 16px rgba(0,0,0,.12)}
+.hdr{background:linear-gradient(135deg,#003d7a,#0066cc);padding:20px 28px;display:flex;justify-content:space-between;align-items:center}
+.hdr-left h1{color:#fff;font-size:18px;font-weight:700}
+.hdr-left p{color:#a8c8f0;font-size:11px;margin-top:3px}
+.hdr-right .period{color:#fff;font-size:14px;font-weight:700;text-align:right}
+.hdr-right .sub{color:#a8c8f0;font-size:11px;margin-top:2px;text-align:right}
+.stripe{height:4px;background:linear-gradient(90deg,#f5a623,#0066cc,#06d6a0)}
+.kpi-strip{display:grid}
+.k5{grid-template-columns:repeat(5,1fr)}.k4{grid-template-columns:repeat(4,1fr)}.k3{grid-template-columns:repeat(3,1fr)}
+.kpi{padding:13px 14px;text-align:center;border-right:1px solid #e0e8f0;border-bottom:1px solid #e0e8f0}
+.kpi:last-child{border-right:none}
+.kl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#666;margin-bottom:4px}
+.kv{font-size:24px;font-weight:700;letter-spacing:-1px}
+.blue{color:#003d7a}.red{color:#cc2200}.green{color:#1a7a1a}.amber{color:#b36b00}.teal{color:#0a7a7a}
+.ks{font-size:10px;color:#888;margin-top:3px}
+.sec{padding:7px 18px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.9px}
+.sec-blue{background:#003d7a;color:#fff}.sec-teal{background:#0a5a5a;color:#fff}
+.sec-amber{background:#7a4a00;color:#fff}.sec-green{background:#1a5c1a;color:#fff}
+.sec-red{background:#8c1a1a;color:#fff}.sec-light{background:#eef4fb;color:#003d7a;border-left:4px solid #003d7a}
+.padded{padding:14px 18px}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+thead tr{background:#003d7a}
+th{padding:7px 8px;color:#fff;text-align:center;font-weight:700;font-size:10.5px;border-right:1px solid #1a5aaa}
+th.tl{text-align:left}th:last-child{border-right:none}
+td{padding:6px 8px;text-align:center;border-bottom:1px solid #e8eef8;border-right:1px solid #e8eef8}
+td.tl{text-align:left;font-weight:500}td:last-child{border-right:none}
+tr:nth-child(even) td{background:#f7f9fc}tr:nth-child(odd) td{background:#fff}
+.total-row td{background:#dde8f8!important;font-weight:700;border-top:2px solid #003d7a}
+.sub-hdr td{background:#eef4fb!important;font-weight:700;color:#003d7a;border-top:2px solid #003d7a}
+.rc{color:#cc2200;font-weight:700}.gc{color:#1a7a1a;font-weight:700}.ac{color:#b36b00;font-weight:700}
+.badge{display:inline-block;border-radius:10px;padding:2px 7px;font-size:9.5px;font-weight:700}
+.b-red{background:#ffe0dc;color:#8c1a1a}.b-green{background:#dcf0dc;color:#1a5c1a}
+.b-amber{background:#fff0dc;color:#7a4a00}.b-blue{background:#dde8f8;color:#003d7a}
+.b-teal{background:#d0f0f0;color:#0a5a5a}
+.g2{display:grid;grid-template-columns:1fr 1fr}
+.gc2{padding:14px 16px;border-right:1px solid #e0e8f0}
+.gc2:last-child{border-right:none}
+.ct{font-size:10.5px;font-weight:700;color:#003d7a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.alert-box{background:#fff0f0;border:1px solid #f05c5c;border-left:4px solid #cc2200;padding:8px 14px;margin:8px 18px;border-radius:4px;font-size:11.5px;color:#8c1a1a}
+.warn-box{background:#fff8e1;border:1px solid #f5a623;border-left:4px solid #f5a623;padding:8px 14px;margin:8px 18px;border-radius:4px;font-size:11.5px;color:#7a4a00}
+.good-box{background:#f0fff4;border:1px solid #48bb78;border-left:4px solid #1a7a1a;padding:8px 14px;margin:8px 18px;border-radius:4px;font-size:11.5px;color:#1a5c1a}
+.config-banner{background:linear-gradient(90deg,rgba(0,61,122,.1),rgba(6,214,160,.05));border:1px solid rgba(0,102,204,.3);border-radius:8px;padding:10px 16px;margin:12px 18px;font-size:11.5px;color:#003d7a}
+.config-banner strong{color:#1a1a1a}
+.foot{background:#003d7a;padding:12px 20px;display:flex;justify-content:space-between}
+.foot span{color:#a8c8f0;font-size:11px}.foot strong{color:#fff}
+.note{font-size:10.5px;color:#888;font-style:italic;padding:5px 18px 8px;border-top:1px solid #e8eef8}
+@media print{body{background:#fff;padding:0}.page{box-shadow:none}.config-banner{display:none}}
+</style>
+</head>
+<body>
+
+<!-- ████████████████████████████████████████████████████████████████████
+  ██  CONFIG — EDIT ONLY THIS SECTION TO UPDATE THE REPORT            ██
+  ██  No coding needed. Just change the numbers after the colons.     ██
+  ██  Save the file and open it in your browser to see the update.    ██
+  ████████████████████████████████████████████████████████████████████ -->
+<script>
+const CONFIG = {
+
+  /* ─── COMPANY & REPORT INFO ──────────────────────────── */
+  company:      "Mawingu Networks",
+  department:   "Customer Success · Call Centre",
+  reportMonth:  "May 2026",
+  reportPeriod: "1 – 14 May 2026",   // ← update end date each month
+  reportNote:   "MTD Report · 14 days",
+
+  /* ─── CALL KPIs (top of report) ─────────────────────── */
+  kpi: {
+    totalCalls:       12477,   // total inbound calls offered
+    answered:          9378,   // calls answered
+    droppedQueue:      3008,   // dropped on queue
+    droppedIVR:        6187,   // dropped on IVR
+    missed:              59,   // missed calls
+    abandonRate:         24,   // % abandon rate
+    missedCallRate:     0.5,   // % missed call rate
+    repeatCallRate:      49,   // % repeat calls
+    distinctCallers:   5578,   // unique callers
+    outboundTotal:    10614,   // total outbound calls
+    outboundAnswered:  5487,   // outbound answered
+    outboundContact:   51.7,   // % contact rate (answered/total)
+  },
+
+  /* ─── TICKET KPIs ────────────────────────────────────── */
+  ticketKpi: {
+    total:         6979,   // total tickets
+    repeatTickets:  889,   // repeat tickets
+    repeatPct:    12.74,   // % repeat tickets
+    withinSLA:       84,   // % within SLA
+    beyondSLA:       16,   // % beyond SLA
+    avgClosure:      38,   // avg closure time (hours)
+  },
+
+  /* ─── DAILY DATA ──────────────────────────────────────
+     Format: { date:"1 May", day:"Thu", calls:1051, repeat:29 }
+     repeat = repeat call % for that day (0 if unknown)         */
+  daily: [
+    { date:"1 May",  day:"Thu", calls:1051, repeat:29 },
+    { date:"2 May",  day:"Fri", calls:1248, repeat:40 },
+    { date:"3 May",  day:"Sat", calls:1053, repeat:24 },
+    { date:"4 May",  day:"Sun", calls: 926, repeat:38 },
+    { date:"5 May",  day:"Mon", calls:1040, repeat:31 },
+    { date:"6 May",  day:"Tue", calls: 796, repeat:38 },
+    { date:"7 May",  day:"Wed", calls: 808, repeat:39 },
+    { date:"8 May",  day:"Thu", calls: 667, repeat:30 },
+    { date:"9 May",  day:"Fri", calls: 646, repeat:30 },
+    { date:"10 May", day:"Sat", calls: 917, repeat:35 },
+    { date:"11 May", day:"Sun", calls:1150, repeat:30 },
+    { date:"12 May", day:"Mon", calls: 923, repeat:37 },
+    { date:"13 May", day:"Tue", calls: 242, repeat:37 },
+    { date:"14 May", day:"Wed", calls:  null, repeat:31 },  // partial day
+  ],
+
+  /* ─── INBOUND AGENTS ─────────────────────────────────── */
+  agents: [
+    { name:"Samson",         inbound:1210, outgoing:5,   tickets:196, fcr:134 },
+    { name:"Johnson",        inbound:1110, outgoing:97,  tickets:701, fcr:0   },
+    { name:"Ann Wanjiru",    inbound: 754, outgoing:3,   tickets:292, fcr:149 },
+    { name:"Chero",          inbound: 701, outgoing:140, tickets:0,   fcr:0   },
+    { name:"Gethsamane",     inbound: 721, outgoing:104, tickets:389, fcr:236 },
+    { name:"Gladys Mwihaki", inbound: 681, outgoing:105, tickets:416, fcr:249 },
+    { name:"Joseph",         inbound: 550, outgoing:47,  tickets:364, fcr:188 },
+    { name:"Paul N",         inbound: 510, outgoing:44,  tickets:360, fcr:173 },
+    { name:"Faith",          inbound: 483, outgoing:54,  tickets:334, fcr:210 },
+    { name:"Mercy",          inbound: 429, outgoing:91,  tickets:363, fcr:231 },
+    { name:"Agnes",          inbound: 404, outgoing:25,  tickets:196, fcr:118 },
+    { name:"Grace",          inbound: 404, outgoing:267, tickets:244, fcr:159 },
+    { name:"R Burns",        inbound: 397, outgoing:78,  tickets:0,   fcr:0   },
+    { name:"Alexia Tisean",  inbound: 394, outgoing:74,  tickets:220, fcr:142 },
+    { name:"Daisy Kirui",    inbound: 289, outgoing:291, tickets:0,   fcr:0   },
+    { name:"Isaboke",        inbound: 195, outgoing:251, tickets:16,  fcr:0   },
+    { name:"Scofield",       inbound:  59, outgoing:219, tickets:12,  fcr:2   },
+  ],
+
+  /* ─── TICKET CREATORS ────────────────────────────────── */
+  ticketCreators: [
+    { name:"Johnson Nyambageka", tickets:701, dept:"CST" },
+    { name:"Application",        tickets:473, dept:"System" },
+    { name:"Gladys Mwihaki",     tickets:416, dept:"CST" },
+    { name:"Gethsemane Kerubo",  tickets:389, dept:"CST" },
+    { name:"Joseph Maveke",      tickets:364, dept:"CST" },
+    { name:"Faith Irungu",       tickets:334, dept:"CST" },
+    { name:"Cynthia Cherotich",  tickets:354, dept:"CST" },
+    { name:"Ann Mathenge",       tickets:292, dept:"CST" },
+    { name:"Grace Muriungi",     tickets:244, dept:"CST" },
+    { name:"Agnes Magoya",       tickets:196, dept:"CST" },
+    { name:"Ivy Muthoni",        tickets: 47, dept:"CST" },
+  ],
+
+  /* ─── TICKET CATEGORIES ──────────────────────────────── */
+  ticketCategories: [
+    { name:"No Internet",           tickets:2317, repeat:454 },
+    { name:"Slow Internet",         tickets:1261, repeat:225 },
+    { name:"Bill Enquiry",          tickets: 889, repeat: 83 },
+    { name:"Recovery",              tickets: 868, repeat: 22 },
+    { name:"Customer Enquiry",      tickets: 514, repeat: 54 },
+    { name:"Reconnection",          tickets: 329, repeat: 15 },
+    { name:"Selfcare",              tickets: 222, repeat: 19 },
+    { name:"Relocation",            tickets: 187, repeat:  8 },
+    { name:"Upgrade/Downgrade",     tickets: 145, repeat:  2 },
+    { name:"Change Details",        tickets: 142, repeat:  3 },
+    { name:"Proactive",             tickets:  73, repeat:  0 },
+    { name:"Customer related",      tickets:  18, repeat:  3 },
+  ],
+
+  /* ─── TICKET REGIONS ─────────────────────────────────── */
+  ticketRegions: [
+    { name:"Garissa",  tickets:763, repeat: 79, resTime:27, withinSLA:84 },
+    { name:"Wajir",    tickets:589, repeat: 89, resTime:47, withinSLA:89 },
+    { name:"Isiolo",   tickets:500, repeat: 73, resTime:57, withinSLA:76 },
+    { name:"Kisii",    tickets:452, repeat: 57, resTime:43, withinSLA:84 },
+    { name:"Kerugoya", tickets:125, repeat: 20, resTime:43, withinSLA:82 },
+    { name:"Siaya",    tickets: 77, repeat:  8, resTime:0,  withinSLA:83 },
+    { name:"Bondo",    tickets: 92, repeat: 17, resTime:0,  withinSLA:92 },
+    { name:"Mandera",  tickets: 93, repeat:  9, resTime:0,  withinSLA:90 },
+    { name:"Webuye",   tickets: 65, repeat: 11, resTime:0,  withinSLA:81 },
+    { name:"Hagadera", tickets: 82, repeat:  5, resTime:0,  withinSLA:84 },
+  ],
+
+  /* ─── OUTBOUND RROs ──────────────────────────────────── */
+  outboundRROs: [
+    { name:"Mark",              answered:492, unanswered:565, total:1057 },
+    { name:"Caren",             answered:610, unanswered:399, total:1009 },
+    { name:"Reagan",            answered:448, unanswered:533, total: 981 },
+    { name:"Maryanne Wambui",   answered:442, unanswered:485, total: 927 },
+    { name:"Magdalene",         answered:539, unanswered:358, total: 897 },
+    { name:"Mariam",            answered:388, unanswered:502, total: 890 },
+    { name:"Ivy",               answered:479, unanswered:319, total: 798 },
+    { name:"Caroline Kinyanjui",answered:393, unanswered:388, total: 781 },
+    { name:"Hannan",            answered:381, unanswered:358, total: 739 },
+    { name:"Esther Waweru",     answered:405, unanswered:282, total: 687 },
+    { name:"Margeret",          answered:310, unanswered:348, total: 658 },
+  ],
+
+  /* ─── TICKET MANAGERS ────────────────────────────────── */
+  ticketManagers: [
+    { name:"Magdalene Maina", closed:535, waiting:28, avgMins:68  },
+    { name:"Caren Omondi",    closed:377, waiting:20, avgMins:141 },
+  ],
+
+  /* ─── OBSERVATIONS (edit text as needed) ────────────── */
+  observations: [
+    { area:"2 May — Highest volume",    text:"1,248 calls — peak day of the period with 40% repeat rate. Highest queue pressure. Additional staffing recommended for Fridays.",    priority:"Monitor",  cls:"b-amber" },
+    { area:"Repeat calls at 49%",        text:"Nearly half of all calls are from repeat customers. This is driven by No Internet (454 repeat tickets) and Slow Internet (225 repeat). Systemic network issues in key regions need escalation.",   priority:"Urgent",   cls:"b-red" },
+    { area:"Isiolo SLA — 24% past",      text:"Isiolo has the worst SLA compliance at 76% within — 24% of tickets are breaching. With 57hrs average resolution time, this is the highest priority region for improvement.",                          priority:"Escalate", cls:"b-red" },
+    { area:"Johnson — top ticket agent", text:"701 tickets created, highest on the team. However FCR data is not recorded — need to track FCR rate for Johnson to ensure quality alongside volume.",                                                  priority:"Monitor",  cls:"b-amber" },
+    { area:"Gladys Mwihaki — excellent", text:"681 inbound calls, 416 tickets, 249 FCR (59.9% FCR rate). Strong all-round performer across both call handling and first-call resolution. Set as benchmark.",                                          priority:"Recognise",cls:"b-green" },
+    { area:"Caren outbound — 60.5%",     text:"Highest outbound contact rate at 60.5% (610 answered of 1,009). Best performing RRO. Mark has the lowest at 46.5% despite highest volume — coaching recommended.",                                    priority:"Review",   cls:"b-amber" },
+    { area:"Garissa — 34% of tickets",   text:"Garissa generates 763 of 6,979 tickets (10.9%) but has a balanced 84% SLA compliance. Focus on reducing the 79 repeat tickets through proactive signal optimization.",                                priority:"Monitor",  cls:"b-amber" },
+    { area:"84% SLA — near target",      text:"Overall SLA of 84% is close to the 85% target. Improvement needed in Isiolo (76%) and Lodwar (74%) specifically to push overall SLA over target.",                                                   priority:"Positive", cls:"b-green" },
+  ],
+
+}; // ← END OF CONFIG — do not edit below this line
+</script>
+
+<!-- ═══════════════ HTML RENDERED OUTPUT ═══════════════ -->
+<div class="page">
+<div class="config-banner">
+  ✏️ <strong>To update this report:</strong> Open this file in Notepad or VS Code · Find the <code>CONFIG</code> block at the top · Change the numbers · Save · Open in browser. No coding needed.
+</div>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-left">
+    <h1 id="hdrTitle"></h1>
+    <p id="hdrDept"></p>
+  </div>
+  <div class="hdr-right">
+    <div class="period" id="hdrPeriod"></div>
+    <div class="sub" id="hdrNote"></div>
+  </div>
+</div>
+<div class="stripe"></div>
+
+<!-- CALL KPIs -->
+<div class="kpi-strip k5" id="callKpiStrip"></div>
+<div class="kpi-strip k4" id="callKpiStrip2"></div>
+
+<!-- DAILY CHART -->
+<div class="sec sec-blue">Daily Call Volume & Repeat Rate</div>
+<div style="position:relative;height:230px;padding:14px 18px 0">
+  <canvas id="dailyChart"></canvas>
+</div>
+
+<!-- DAILY TABLE -->
+<div class="sec sec-blue">Daily Breakdown</div>
+<div class="padded">
+  <table id="dailyTable"></table>
+</div>
+
+<!-- INBOUND AGENTS -->
+<div class="sec sec-blue">Inbound Agent Performance — 1 to 14 May 2026</div>
+<div class="g2">
+  <div class="gc2">
+    <div class="ct" style="margin-top:12px">Inbound calls by agent (top 10)</div>
+    <div style="position:relative;height:220px"><canvas id="agentChart"></canvas></div>
+  </div>
+  <div class="gc2">
+    <div class="ct" style="margin-top:12px">FCR rate by agent</div>
+    <div style="position:relative;height:220px"><canvas id="fcrChart"></canvas></div>
+  </div>
+</div>
+<div class="padded">
+  <table id="agentTable"></table>
+</div>
+
+<!-- TICKET KPIs -->
+<div class="sec sec-teal">Ticket Analysis — 1 to 14 May 2026</div>
+<div class="kpi-strip k4" id="ticketKpiStrip"></div>
+
+<div class="g2">
+  <div class="gc2">
+    <div class="ct" style="margin-top:12px">Tickets by category</div>
+    <div style="position:relative;height:200px"><canvas id="catChart"></canvas></div>
+  </div>
+  <div class="gc2">
+    <div class="ct" style="margin-top:12px">Tickets by region (top 8)</div>
+    <div style="position:relative;height:200px"><canvas id="regionChart"></canvas></div>
+  </div>
+</div>
+
+<!-- TICKET CREATOR TABLE -->
+<div class="sec sec-teal">Ticket Creators</div>
+<div class="padded"><table id="creatorTable"></table></div>
+
+<!-- REGION SLA TABLE -->
+<div class="sec sec-teal">Regional SLA Performance</div>
+<div class="g2">
+  <div class="gc2">
+    <div class="ct" style="margin-top:12px">SLA compliance by region</div>
+    <div style="position:relative;height:220px"><canvas id="slaRegionChart"></canvas></div>
+  </div>
+  <div class="gc2">
+    <div class="padded" style="padding-top:14px">
+      <table id="regionTable"></table>
+    </div>
+  </div>
+</div>
+
+<!-- OUTBOUND -->
+<div class="sec sec-blue">Outbound (RRO) Performance — 1 to 14 May 2026</div>
+<div class="g2">
+  <div class="gc2">
+    <div class="ct" style="margin-top:12px">Outbound contact rate by RRO</div>
+    <div style="position:relative;height:220px"><canvas id="outboundChart"></canvas></div>
+  </div>
+  <div class="gc2">
+    <div class="padded" style="padding-top:14px">
+      <table id="outboundTable"></table>
+    </div>
+  </div>
+</div>
+
+<!-- TICKET MANAGERS -->
+<div class="sec sec-teal">Ticket Managers Performance</div>
+<div class="padded"><table id="tmTable"></table></div>
+
+<!-- OBSERVATIONS -->
+<div class="sec sec-light">Key Observations & Recommendations</div>
+<div class="padded"><table id="obsTable"></table></div>
+
+<div class="foot">
+  <span id="footLeft"></span>
+  <span id="footRight"></span>
+</div>
+</div>
+
+<!-- ═══════════════ RENDER ENGINE ═══════════════ -->
+<script>
+Chart.defaults.font.family='Arial,sans-serif';Chart.defaults.font.size=11;Chart.defaults.color='#555';
+
+// ── HELPERS
+function rc(v){return v>=30?'rc':v>=20?'ac':'gc'}
+function ba(cls){const m={'b-red':'b-red','b-green':'b-green','b-amber':'b-amber','b-blue':'b-blue','b-teal':'b-teal'};return m[cls]||'b-blue'}
+
+// ── META
+document.getElementById('pageTitle').textContent = CONFIG.company+' — '+CONFIG.reportMonth+' Report';
+document.getElementById('hdrTitle').textContent = CONFIG.company+' — Performance Report';
+document.getElementById('hdrDept').textContent = CONFIG.department;
+document.getElementById('hdrPeriod').textContent = CONFIG.reportPeriod;
+document.getElementById('hdrNote').textContent = CONFIG.reportNote;
+document.getElementById('footLeft').innerHTML = `${CONFIG.company} · <strong>${CONFIG.reportMonth} Report</strong> · Confidential`;
+document.getElementById('footRight').textContent = CONFIG.reportPeriod;
+
+// ── CALL KPIs
+const ansRate = ((CONFIG.kpi.answered/CONFIG.kpi.totalCalls)*100).toFixed(1);
+document.getElementById('callKpiStrip').innerHTML = [
+  {l:'Total Calls',v:CONFIG.kpi.totalCalls.toLocaleString(),c:'blue',s:`${CONFIG.kpi.answered.toLocaleString()} answered`},
+  {l:'Abandon Rate',v:CONFIG.kpi.abandonRate+'%',c:'red',s:`Target ≤10% · ${CONFIG.kpi.droppedQueue.toLocaleString()} dropped queue`},
+  {l:'Repeat Call Rate',v:CONFIG.kpi.repeatCallRate+'%',c:'amber',s:`${CONFIG.kpi.distinctCallers.toLocaleString()} distinct callers`},
+  {l:'Missed Call Rate',v:CONFIG.kpi.missedCallRate+'%',c:'teal',s:`${CONFIG.kpi.missed} missed calls`},
+  {l:'Answer Rate',v:ansRate+'%',c:'green',s:'Target ≥80%'},
+].map(k=>`<div class="kpi"><div class="kl">${k.l}</div><div class="kv ${k.c}">${k.v}</div><div class="ks">${k.s}</div></div>`).join('');
+
+document.getElementById('callKpiStrip2').innerHTML = [
+  {l:'Outbound Total',v:CONFIG.kpi.outboundTotal.toLocaleString(),c:'blue',s:`${CONFIG.kpi.outboundAnswered.toLocaleString()} connected`},
+  {l:'Outbound Contact %',v:CONFIG.kpi.outboundContact+'%',c:'teal',s:'Connected/total dialled'},
+  {l:'Dropped on IVR',v:CONFIG.kpi.droppedIVR.toLocaleString(),c:'amber',s:'Before reaching agent'},
+  {l:'Dropped on Queue',v:CONFIG.kpi.droppedQueue.toLocaleString(),c:'red',s:'After reaching queue'},
+].map(k=>`<div class="kpi"><div class="kl">${k.l}</div><div class="kv ${k.c}">${k.v}</div><div class="ks">${k.s}</div></div>`).join('');
+
+// ── DAILY CHART
+const dlabels = CONFIG.daily.map(d=>d.date);
+const dcalls  = CONFIG.daily.map(d=>d.calls);
+const drep    = CONFIG.daily.map(d=>d.repeat);
+const dColors = drep.map(v=>v>=40?'rgba(204,34,0,.75)':v>=30?'rgba(179,107,0,.7)':'rgba(26,122,26,.7)');
+new Chart(document.getElementById('dailyChart'),{type:'bar',data:{labels:dlabels,datasets:[
+  {label:'Total Calls',data:dcalls,backgroundColor:'rgba(0,61,122,.65)',borderColor:'#003d7a',borderRadius:3,yAxisID:'y'},
+  {label:'Repeat Rate %',data:drep,type:'line',borderColor:'#cc2200',backgroundColor:'rgba(204,34,0,.06)',fill:true,tension:.3,pointBackgroundColor:dColors,pointRadius:5,borderWidth:2.5,yAxisID:'y2'},
+  {label:'Target 30%',data:Array(CONFIG.daily.length).fill(30),type:'line',borderColor:'#1a7a1a',borderDash:[5,4],borderWidth:1.5,pointRadius:0,backgroundColor:'transparent',yAxisID:'y2'},
+]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+  plugins:{legend:{position:'top',labels:{boxWidth:11,padding:12}},tooltip:{backgroundColor:'#003d7a'}},
+  scales:{x:{grid:{color:'#e8eef8'},ticks:{font:{size:10}}},
+          y:{position:'left',grid:{color:'#e8eef8'},title:{display:true,text:'Calls',font:{size:10}}},
+          y2:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>v+'%'},max:55,title:{display:true,text:'Repeat %',font:{size:10}}}}}});
+
+// ── DAILY TABLE
+const maxCalls = Math.max(...dcalls.filter(v=>v));
+let dtHTML = `<thead><tr><th class="tl">Date</th><th>Day</th><th>Total Calls</th><th>Repeat %</th><th>Volume Bar</th><th>Status</th></tr></thead><tbody>`;
+CONFIG.daily.forEach(d=>{
+  const pct = d.calls ? (d.calls/maxCalls*100).toFixed(0) : 0;
+  const s = !d.calls?'Partial':d.repeat>=40?'High repeat':d.repeat>=30?'Moderate':'Good';
+  const sc = !d.calls?'b-blue':d.repeat>=40?'b-red':d.repeat>=30?'b-amber':'b-green';
+  dtHTML += `<tr>
+    <td class="tl"><strong>${d.date}</strong></td>
+    <td>${d.day}</td>
+    <td>${d.calls?d.calls.toLocaleString():'Partial'}</td>
+    <td class="${d.calls?rc(d.repeat):''}">${d.repeat}%</td>
+    <td style="min-width:100px">
+      <div style="background:#e8eef8;height:7px;border-radius:3px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:#003d7a;border-radius:3px"></div>
+      </div>
+    </td>
+    <td><span class="badge ${sc}">${s}</span></td>
+  </tr>`;
+});
+const totalCalls2 = dcalls.filter(v=>v).reduce((a,b)=>a+b,0);
+const avgRepeat = (drep.reduce((a,b)=>a+b,0)/drep.length).toFixed(1);
+dtHTML += `<tr class="total-row"><td class="tl">MTD Total</td><td>—</td><td>${totalCalls2.toLocaleString()}</td><td class="${rc(+avgRepeat)}">${avgRepeat}% avg</td><td>—</td><td>—</td></tr></tbody>`;
+document.getElementById('dailyTable').innerHTML = dtHTML;
+
+// ── AGENT CHART
+const top10 = [...CONFIG.agents].filter(a=>a.inbound>0).sort((a,b)=>b.inbound-a.inbound).slice(0,10);
+const COLORS=['#003d7a','#0066cc','#1a7a1a','#06d6a0','#f5a623','#cc2200','#0a5a5a','#7755aa','#b36b00','#888'];
+new Chart(document.getElementById('agentChart'),{type:'bar',data:{
+  labels:top10.map(a=>a.name),
+  datasets:[{label:'Inbound Calls',data:top10.map(a=>a.inbound),backgroundColor:top10.map((_,i)=>COLORS[i%COLORS.length]+'bb'),borderRadius:3}]
+},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:{backgroundColor:'#003d7a'}},scales:{x:{grid:{color:'#e8eef8'}},y:{grid:{display:false},ticks:{font:{size:10}}}}}});
+
+// FCR chart
+const agFCR = CONFIG.agents.filter(a=>a.tickets>0&&a.fcr>0).sort((a,b)=>b.fcr/b.tickets-a.fcr/a.tickets).slice(0,8);
+new Chart(document.getElementById('fcrChart'),{type:'bar',data:{
+  labels:agFCR.map(a=>a.name),
+  datasets:[
+    {label:'FCR %',data:agFCR.map(a=>+(a.fcr/a.tickets*100).toFixed(1)),backgroundColor:agFCR.map(a=>{const r=a.fcr/a.tickets;return r>=.6?'rgba(26,122,26,.75)':r>=.4?'rgba(245,166,35,.75)':'rgba(204,34,0,.75)';}),borderRadius:3},
+    {label:'Target 60%',data:Array(agFCR.length).fill(60),type:'line',borderColor:'#003d7a',borderDash:[5,4],borderWidth:1.5,pointRadius:0,backgroundColor:'transparent'},
+  ]
+},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{position:'top',labels:{boxWidth:11}},tooltip:{backgroundColor:'#003d7a',callbacks:{label:c=>c.dataset.label+': '+c.parsed.x+'%'}}},scales:{x:{grid:{color:'#e8eef8'},ticks:{callback:v=>v+'%'},max:100},y:{grid:{display:false},ticks:{font:{size:10}}}}}});
+
+// AGENT TABLE
+let atHTML = `<thead><tr><th class="tl">Agent</th><th>Inbound</th><th>Outgoing</th><th>Tickets</th><th>FCR</th><th>FCR %</th><th>Conv %</th><th>Status</th></tr></thead><tbody>`;
+let totIn=0,totOut=0,totTix=0,totFcr=0;
+CONFIG.agents.forEach(a=>{
+  totIn+=a.inbound;totOut+=a.outgoing;totTix+=a.tickets;totFcr+=a.fcr;
+  const fcrPct = a.tickets>0?+(a.fcr/a.tickets*100).toFixed(1):null;
+  const convPct= a.inbound>0&&a.tickets>0?+(a.tickets/a.inbound*100).toFixed(1):null;
+  const fcrCls = fcrPct>=60?'gc':fcrPct>=40?'ac':fcrPct!==null?'rc':'';
+  const status = fcrPct===null?'—':fcrPct>=60?'✅ Strong':fcrPct>=40?'⚠️ Developing':'❌ Low FCR';
+  atHTML += `<tr><td class="tl">${a.name}</td><td>${a.inbound}</td><td>${a.outgoing||'—'}</td><td>${a.tickets||'—'}</td><td>${a.fcr||'—'}</td>
+    <td class="${fcrCls}">${fcrPct!==null?fcrPct+'%':'—'}</td>
+    <td class="${convPct?rc(100-convPct):''}">${convPct!==null?convPct+'%':'—'}</td>
+    <td style="font-size:10.5px">${status}</td></tr>`;
+});
+atHTML += `<tr class="total-row"><td class="tl">TOTAL</td><td>${totIn.toLocaleString()}</td><td>${totOut.toLocaleString()}</td><td>${totTix.toLocaleString()}</td><td>${totFcr.toLocaleString()}</td><td class="gc">${+(totFcr/totTix*100).toFixed(1)}%</td><td>—</td><td>—</td></tr></tbody>`;
+document.getElementById('agentTable').innerHTML = atHTML;
+
+// TICKET KPIs
+document.getElementById('ticketKpiStrip').innerHTML = [
+  {l:'Total Tickets',v:CONFIG.ticketKpi.total.toLocaleString(),c:'blue',s:'1–14 May 2026'},
+  {l:'Repeat Tickets',v:CONFIG.ticketKpi.repeatPct+'%',c:'amber',s:CONFIG.ticketKpi.repeatTickets+' repeat tickets'},
+  {l:'Within SLA',v:CONFIG.ticketKpi.withinSLA+'%',c:'green',s:'Target ≥85%'},
+  {l:'Avg Closure Time',v:CONFIG.ticketKpi.avgClosure+'hrs',c:'teal',s:CONFIG.ticketKpi.beyondSLA+'% beyond SLA'},
+].map(k=>`<div class="kpi"><div class="kl">${k.l}</div><div class="kv ${k.c}">${k.v}</div><div class="ks">${k.s}</div></div>`).join('');
+
+// CATEGORY CHART
+const topCats = CONFIG.ticketCategories.slice(0,8);
+new Chart(document.getElementById('catChart'),{type:'doughnut',data:{
+  labels:topCats.map(c=>c.name),
+  datasets:[{data:topCats.map(c=>c.tickets),backgroundColor:['#003d7a','#cc2200','#f5a623','#1a7a1a','#0a5a5a','#7755aa','#0066cc','#888'],borderWidth:2,borderColor:'#fff'}]
+},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{boxWidth:10,font:{size:10},padding:6}},tooltip:{backgroundColor:'#003d7a'}}}});
+
+// REGION CHART
+const topReg = [...CONFIG.ticketRegions].sort((a,b)=>b.tickets-a.tickets).slice(0,8);
+new Chart(document.getElementById('regionChart'),{type:'bar',data:{
+  labels:topReg.map(r=>r.name),
+  datasets:[
+    {label:'Total Tickets',data:topReg.map(r=>r.tickets),backgroundColor:'rgba(0,61,122,.7)',borderRadius:3},
+    {label:'Repeat Tickets',data:topReg.map(r=>r.repeat),backgroundColor:'rgba(204,34,0,.65)',borderRadius:3},
+  ]
+},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{boxWidth:11}},tooltip:{backgroundColor:'#003d7a'}},scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'#e8eef8'}}}}});
+
+// CREATOR TABLE
+let ctHTML = `<thead><tr><th class="tl">Creator</th><th>Department</th><th>Tickets</th><th>% of Total</th><th>Volume</th></tr></thead><tbody>`;
+const totalTix = CONFIG.ticketCreators.reduce((s,c)=>s+c.tickets,0);
+CONFIG.ticketCreators.sort((a,b)=>b.tickets-a.tickets).forEach(c=>{
+  const pct = (c.tickets/CONFIG.ticketKpi.total*100).toFixed(1);
+  const bar = (c.tickets/CONFIG.ticketCreators[0].tickets*100).toFixed(0);
+  ctHTML += `<tr><td class="tl">${c.name}</td><td>${c.dept}</td><td>${c.tickets}</td><td>${pct}%</td>
+    <td style="min-width:120px"><div style="background:#e8eef8;height:6px;border-radius:3px"><div style="width:${bar}%;height:100%;background:#003d7a;border-radius:3px"></div></div></td></tr>`;
+});
+ctHTML += `<tr class="total-row"><td class="tl">Total (shown)</td><td>—</td><td>${totalTix.toLocaleString()}</td><td>—</td><td>—</td></tr></tbody>`;
+document.getElementById('creatorTable').innerHTML = ctHTML;
+
+// REGION SLA CHART
+new Chart(document.getElementById('slaRegionChart'),{type:'bar',data:{
+  labels:CONFIG.ticketRegions.map(r=>r.name),
+  datasets:[
+    {label:'Within SLA %',data:CONFIG.ticketRegions.map(r=>r.withinSLA),backgroundColor:'rgba(26,122,26,.7)',borderRadius:3},
+    {label:'Target 85%',data:Array(CONFIG.ticketRegions.length).fill(85),type:'line',borderColor:'#003d7a',borderDash:[5,4],borderWidth:1.5,pointRadius:0,backgroundColor:'transparent'},
+  ]
+},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{position:'top',labels:{boxWidth:11}},tooltip:{backgroundColor:'#003d7a',callbacks:{label:c=>c.dataset.label+': '+c.parsed.x+'%'}}},scales:{x:{grid:{color:'#e8eef8'},ticks:{callback:v=>v+'%'},max:105},y:{grid:{display:false},ticks:{font:{size:10}}}}}});
+
+// REGION TABLE
+let rtHTML = `<thead><tr><th class="tl">Region</th><th>Tickets</th><th>Repeat</th><th>Repeat%</th><th>Res. Time</th><th>Within SLA</th><th>Status</th></tr></thead><tbody>`;
+CONFIG.ticketRegions.forEach(r=>{
+  const rPct = (r.repeat/r.tickets*100).toFixed(1);
+  const sCls = r.withinSLA>=85?'gc':r.withinSLA>=80?'ac':'rc';
+  const status = r.withinSLA>=85?'✅ On target':r.withinSLA>=80?'⚠️ Near target':'❌ Below target';
+  rtHTML += `<tr><td class="tl">${r.name}</td><td>${r.tickets}</td><td>${r.repeat}</td><td>${rPct}%</td>
+    <td>${r.resTime>0?r.resTime+'hrs':'—'}</td>
+    <td class="${sCls}">${r.withinSLA}%</td>
+    <td style="font-size:10.5px">${status}</td></tr>`;
+});
+document.getElementById('regionTable').innerHTML = rtHTML + '</tbody>';
+
+// OUTBOUND CHART
+const obTop = CONFIG.outboundRROs.slice(0,8);
+new Chart(document.getElementById('outboundChart'),{type:'bar',data:{
+  labels:obTop.map(r=>r.name),
+  datasets:[
+    {label:'Answered',data:obTop.map(r=>r.answered),backgroundColor:'rgba(26,122,26,.7)',borderRadius:3,stack:'ob'},
+    {label:'Unanswered',data:obTop.map(r=>r.unanswered),backgroundColor:'rgba(204,34,0,.6)',borderRadius:3,stack:'ob'},
+  ]
+},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{position:'top',labels:{boxWidth:11}},tooltip:{backgroundColor:'#003d7a'}},scales:{x:{stacked:true,grid:{color:'#e8eef8'}},y:{stacked:true,grid:{display:false},ticks:{font:{size:10}}}}}});
+
+// OUTBOUND TABLE
+let obHTML = `<thead><tr><th class="tl">RRO</th><th>Total</th><th>Answered</th><th>Unanswered</th><th>Contact %</th><th>Status</th></tr></thead><tbody>`;
+let obTot=0,obAns=0;
+CONFIG.outboundRROs.forEach(r=>{
+  obTot+=r.total;obAns+=r.answered;
+  const cPct = (r.answered/r.total*100).toFixed(1);
+  const cCls = cPct>=60?'gc':cPct>=50?'ac':'rc';
+  obHTML += `<tr><td class="tl">${r.name}</td><td>${r.total.toLocaleString()}</td><td>${r.answered}</td><td>${r.unanswered}</td>
+    <td class="${cCls}">${cPct}%</td>
+    <td><span class="badge ${cPct>=60?'b-green':cPct>=50?'b-amber':'b-red'}">${cPct>=60?'Strong':cPct>=50?'Average':'Low'}</span></td></tr>`;
+});
+obHTML += `<tr class="total-row"><td class="tl">Total</td><td>${obTot.toLocaleString()}</td><td>${obAns.toLocaleString()}</td><td>${(obTot-obAns).toLocaleString()}</td><td class="${(obAns/obTot*100)>=55?'gc':'ac'}">${(obAns/obTot*100).toFixed(1)}%</td><td>—</td></tr></tbody>`;
+document.getElementById('outboundTable').innerHTML = obHTML;
+
+// TICKET MANAGERS TABLE
+let tmHTML = `<thead><tr><th class="tl">Ticket Manager</th><th>Closed</th><th>Waiting on Customer</th><th>Avg Handle Time</th><th>Assessment</th></tr></thead><tbody>`;
+CONFIG.ticketManagers.forEach(t=>{
+  const aCls = t.avgMins<=90?'gc':'rc';
+  tmHTML += `<tr><td class="tl"><strong>${t.name}</strong></td><td class="gc">${t.closed}</td><td>${t.waiting}</td>
+    <td class="${aCls}">${t.avgMins} mins (${(t.avgMins/60).toFixed(1)} hrs)</td>
+    <td><span class="badge ${t.avgMins<=90?'b-green':'b-red'}">${t.avgMins<=90?'Efficient':'High handle time'}</span></td></tr>`;
+});
+const totClosed = CONFIG.ticketManagers.reduce((s,t)=>s+t.closed,0);
+const totWait   = CONFIG.ticketManagers.reduce((s,t)=>s+t.waiting,0);
+const avgMins   = Math.round(CONFIG.ticketManagers.reduce((s,t)=>s+t.avgMins,0)/CONFIG.ticketManagers.length);
+tmHTML += `<tr class="total-row"><td class="tl">Total</td><td>${totClosed}</td><td>${totWait}</td><td class="ac">${avgMins} mins avg</td><td>—</td></tr></tbody>`;
+document.getElementById('tmTable').innerHTML = tmHTML;
+
+// OBSERVATIONS TABLE
+let obsHTML = `<thead><tr><th class="tl" style="width:22%">Area</th><th class="tl">Observation</th><th style="width:14%">Priority</th></tr></thead><tbody>`;
+CONFIG.observations.forEach(o=>{
+  obsHTML += `<tr><td class="tl"><strong>${o.area}</strong></td><td class="tl" style="font-size:12px">${o.text}</td>
+    <td><span class="badge ${o.cls}">${o.priority}</span></td></tr>`;
+});
+obsHTML += '</tbody>';
+document.getElementById('obsTable').innerHTML = obsHTML;
+</script>
+</body>
+</html>
+Done
+
